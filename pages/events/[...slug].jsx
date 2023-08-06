@@ -7,7 +7,7 @@ import ErrorAlert from '@/components/ui/error-alert';
 import { useEffect, useState } from 'react';
 import Head from 'next/head';
 
-const FilteredEventsPage = (props) => {
+const FilteredEventsPage = () => {
   const [loadedEvents, setLoadedEvents] = useState();
   const router = useRouter();
 
@@ -30,8 +30,20 @@ const FilteredEventsPage = (props) => {
     }
   }, [data]);
 
+  let pageHeadData = (
+    <Head>
+      <title>Filtered events</title>
+      <meta name='description' content={`A list of filtered events.`} />
+    </Head>
+  );
+
   if (!loadedEvents) {
-    return <p className='center'>Loading...</p>;
+    return (
+      <>
+        {pageHeadData}
+        <p className='center'>Loading...</p>;
+      </>
+    );
   }
 
   const filteredYear = filterData[0];
@@ -40,9 +52,17 @@ const FilteredEventsPage = (props) => {
   const numYear = +filteredYear;
   const numMonth = +filteredMonth;
 
+  pageHeadData = (
+    <Head>
+      <title>Filtered events</title>
+      <meta name='description' content={`All events for ${numMonth}/${numYear}.`} />
+    </Head>
+  );
+
   if (isNaN(numYear) || isNaN(numMonth) || numYear > 2030 || numYear < 2021 || numMonth < 1 || numMonth > 12 || error) {
     return (
       <>
+        {pageHeadData}
         <ErrorAlert>
           <p>Invalid filter. Please adjust your values!</p>
         </ErrorAlert>
@@ -61,6 +81,7 @@ const FilteredEventsPage = (props) => {
   if (!filteredEvents || filteredEvents.length === 0) {
     return (
       <>
+        {pageHeadData}
         <ErrorAlert>
           <p>No events found for the chosen filter!</p>
         </ErrorAlert>
@@ -75,10 +96,7 @@ const FilteredEventsPage = (props) => {
 
   return (
     <>
-      <Head>
-        <title>Filtered events</title>
-        <meta name='description' content={`All events for ${numMonth}/${numYear}.`} />
-      </Head>
+      {pageHeadData}
       <ResultsTitle date={date} />
       <EventList items={filteredEvents} />
     </>
