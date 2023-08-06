@@ -5,6 +5,7 @@ import ResultsTitle from '@/components/results-title/results-title';
 import Button from '@/components/ui/button';
 import ErrorAlert from '@/components/ui/error-alert';
 import { useEffect, useState } from 'react';
+import Head from 'next/head';
 
 const FilteredEventsPage = (props) => {
   const [loadedEvents, setLoadedEvents] = useState();
@@ -74,6 +75,10 @@ const FilteredEventsPage = (props) => {
 
   return (
     <>
+      <Head>
+        <title>Filtered events</title>
+        <meta name='description' content={`All events for ${numMonth}/${numYear}.`} />
+      </Head>
       <ResultsTitle date={date} />
       <EventList items={filteredEvents} />
     </>
