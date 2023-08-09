@@ -1,12 +1,15 @@
-import { MongoClient } from 'mongodb';
+import { connectDB, getAllDocuments, insertDocument } from '@/helpers/db-utils';
 
 export default async function handler(req, res) {
   const { method, body, query } = req;
   const eventId = query.eventId;
-
-  const client = await MongoClient.connect(
-    `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.kefqvdm.mongodb.net/events?retryWrites=true&w=majority`
-  );
+  let client;
+  try {
+    client = await connectDB();
+  } catch (error) {
+    res.status(500).json({ message: 'Connecting to the database failed!' });
+    return;
+  }
 
   if (method === 'POST') {
     const { email, name, text } = body;
@@ -23,15 +26,22 @@ export default async function handler(req, res) {
       eventId,
     };
 
-    const db = client.db();
-    const result = await db.collection('comments').insertOne(newComment);
-    newComment.id = result.insertedId;
+    let result;
+    try {
+      result = await insertDocument(client, 'comments', newComment);
+      newComment._id = result.insertedId;
 
-    res.status(200).json({ comment: newComment });
+      res.status(200).json({ comment: newComment });
+    } catch (error) {
+      res.status(500).json({ message: 'Adding comment failed!' });
+    }
   } else if (method === 'GET') {
-    const db = client.db();
-    const documents = await db.collection('comments').find().sort({ _id: -1 }).toArray();
-    res.status(200).json({ comments: documents });
+    try {
+      const documents = await getAllDocuments(client, 'comments', { _id: -1 });
+      res.status(200).json({ comments: documents });
+    } catch (error) {
+      res.status(500).json({ message: 'Getting comments failed!' });
+    }
   }
   client.close();
 }
